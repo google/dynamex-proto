@@ -1,0 +1,296 @@
+// Copyright 2016 Google Inc. All Rights Reserved.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+//     http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+syntax = "proto2";
+package dynamex.proto;
+
+// Describes a postal address that can be shipped from or to.
+// All fields should be populated.
+message PostalAddress {
+  // Recipient name associated with the address.
+  optional string recipient_name = 1;
+
+  // Phone number for the address (should not appear on labels).
+  optional string phone_number = 2;
+
+  // One or more lines representing the address including street number and
+  // name, apartment or building number, etc.
+  repeated string address_line = 3;
+
+  // The name of the city or town for the address.
+  optional string locality_name = 4;
+
+  // State or province name.
+  optional string administrative_area_name = 5;
+
+  // Postal code associated with the address.
+  optional string postal_code_number = 6;
+
+  // ISO 3166-1-alpha-2 code for the country name. E.g., "US" or "CA"
+  optional string country_name_code = 7;
+}
+
+// Account details for authenticating requests.
+message AccountDetails {
+  // Account number for billing.
+  optional string account_number = 1;
+
+  // Username associated with the account. If multiple usernames are associated
+  // it will be easier to rotate passwords without changing the account number.
+  optional string username = 2;
+
+  // Password to authenticate the account.
+  optional string password = 3;
+}
+
+// Describes the requested window of an order.
+message DeliveryWindow {
+  optional int64 window_start_millis = 1;
+  optional int64 window_end_millis = 2;
+}
+
+// Describes options for a delivery
+message DeliveryOptions {
+  enum DeliveryFailureBehavior {
+    // Redeliver up to 3 times, then return to sender.
+    REDELIVER_NEXT_DAY_3_TIMES = 1;
+
+    // Destroy the parcel and do not attempt redelivery.
+    DISCARD = 2;
+  }
+
+  // Recipient signature is required.
+  optional bool signature_required = 1;
+
+  // The shipment contains alcohol and requires the signature of an adult.
+  optional bool contains_alcohol = 2;
+
+  // The shipment contains perishables.
+  optional bool contains_perishables = 3;
+
+  // Specifies the action to take on a delivery failure.
+  optional DeliveryFailureBehavior delivery_failure_behavior = 4;
+}
+
+message CreateLabelRequest {
+  // Describes one label being requested.
+  message RequestedLabel {
+    // Reference numbers to associate with this shipment
+    // (these should be printed on the label)
+    repeated string reference_number = 5;
+  }
+
+  // Describes a shipment which may have multiple labels associated with it.
+  // It is possible that some labels could be canceled within a shipment if the
+  // order is repacked.
+  message Shipment {
+    // Labels associated with this shipment
+    repeated RequestedLabel requested_label = 1;
+
+    // Address of the shipper to be used for returns.
+    optional PostalAddress return_address = 1;
+
+    // Address for picking up the parcel. This may be absent if the parcel is
+    // expected to be injected.
+    optional PostalAddress pickup_address = 2;
+
+    // Address of the recipient.
+    optional PostalAddress recipient_address = 3;
+
+    // Delivery instructions, e.g., "leave behind the ficus tree".
+    optional string delivery_instructions = 4;
+
+    // Delivery window requested by the customer.
+    optional DeliveryWindow delivery_window = 6;
+
+    // Options for the shipment.
+    optional DeliveryOptions delivery_options = 7;
+  }
+
+  // Account for authenticating the request.
+  optional AccountDetails account_details = 1;
+
+  // Requested shipments
+  repeated Shipment requested_label = 2;
+}
+
+message CreateLabelsResponse {
+  message LabelData {
+    // Tracking number that can be used in tracking requests.
+    optional string tracking_number = 1;
+
+    // TODO(ashmore): Find out what information Dynamex needs on the label.
+    // sorting code? what else?
+
+    // Reference numbers from the request.
+    repeated string reference_number = 3;
+  }
+
+  message ShipmentData {
+    repeated LabelData label_data = 1;
+  }
+
+  message ShipmentResponse {
+    oneof contents {
+      // Labels for the shipment.
+      ShipmentData shipment_data = 1;
+
+      // Should be present if the label can not be fetched at all, for instance
+      // a bad address, or some other invalid input in the request.
+      string error = 2;
+    }
+  }
+
+  message Shipments {
+    repeated ShipmentResponse shipment = 3;
+  }
+
+  oneof payload {
+    // Shipments with labels associated.
+    Shipments shipments = 1;
+
+    // Should be present if there is an error with the entire request. E.g.,
+    // invalid authentication.
+    string error = 2;
+  }
+}
+
+message CancelLabelsRequest {
+  // Account for authenticating the request.
+  optional AccountDetails account_details = 1;
+
+  // Tracking numbers to cancel.
+  repeated string tracking_number = 2;
+}
+
+message CancelLabelsResponse {
+
+  message CanceledLabel {
+    // Tracking number corresponding to the label being canceled.
+    optional string tracking_number = 1;
+
+    // If the tracking number could not be canceled, this should be present and
+    // indicate the reason.
+    optional string error = 2;
+  }
+
+  message CanceledLabels {
+    repeated CanceledLabel label = 1;
+  }
+
+  oneof response {
+    // Labels that have been canceled.
+    CanceledLabels canceled_labels = 1;
+
+    // Should be present if there is an error with the request.
+    string error = 2;
+  }
+}
+
+message GetTrackingStatusRequest {
+  // Account for authenticating the request.
+  optional AccountDetails account_details = 1;
+
+  // Tracking numbers of the parcels to track.
+  repeated string tracking_number = 2;
+}
+
+message GetTrackingStatusResponse {
+  message TrackingEvent {
+    enum Type {
+      // Present for forward compatibility. Unrecognized enums will default to
+      // this value.
+      UNKNOWN = 0;
+
+      // Informational event that does not necessarily affect delivery status.
+      INFO = 1;
+
+      // Parcel is en route to the recipient.
+      OUT_FOR_DELIVERY = 2;
+
+      // Parcel has been successfully delivered.
+      DELIVERED = 3;
+
+      // A delivery attempt was made but could not be completed.
+      // Example: a signature was required and the recipient was not home.
+      DELIVERY_FAILED = 4;
+
+      // Something has happened which requires input from the shipper.
+      NEEDS_ATTENTION = 5;
+
+      // The parcel can not be delivered.
+      // Example: The parcel is irreperably damaged and unsendable.
+      GAVE_UP = 6;
+    }
+
+    // Type of the event.
+    optional Type type = 1;
+
+    // Time of the event in epoch millis.
+    optional int64 timestamp_millis = 2;
+
+    // Extra information associated with the event.
+    optional string notes = 3;
+  }
+
+  message TrackedParcel {
+    // Tracking number of the parcel.
+    optional string tracking_number = 1;
+
+    // Events associated with the parcel.
+    repeated TrackingEvent tracking_events = 2;
+  }
+
+  // Events for each of the tracking numbers requested. If a tracking number
+  // was requested that does not exist, it should not be included in the
+  // response.
+  repeated TrackedParcel tracked_parcels = 1;
+}
+
+message CheckDestinationRequest {
+  // Account for authenticating the request.
+  optional AccountDetails account_details = 1;
+
+  // Address that we want to check.
+  optional PostalAddress destination_address = 2;
+}
+
+message CheckDestinationResponse {
+  oneof response {
+    // Normalized or validated version of the address.
+    // Absent if there is an error.
+    PostalAddress validated_address = 1;
+
+    // Reason or description of any validation errors.
+    string error = 2;
+  }
+}
+
+service DynamexService {
+  // Creates labels with tracking numbers.
+  rpc CreateLabels(CreateLabelsRequest)
+    returns (CreateLabelsResponse) {}
+
+  // Cancels labels that are not expected to be shipped.
+  rpc CancelLabels(CancelLabelsRequest)
+    returns (CancelLabelsResponse) {}
+
+  // Get the tracking status of tracking numbers.
+  rpc GetTrackingStatus(GetTrackingStatusRequest)
+    returns (GetTrackingStatusResponse) {}
+
+  // Determines whether the place is a reachable destination.
+  rpc CheckDestination(CheckDestinationRequest)
+    returns (CheckDestinationResponse) {}
+}

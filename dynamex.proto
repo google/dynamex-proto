@@ -258,25 +258,6 @@ message GetTrackingStatusResponse {
   repeated TrackedParcel tracked_parcels = 1;
 }
 
-message CheckDestinationRequest {
-  // Account for authenticating the request.
-  optional AccountDetails account_details = 1;
-
-  // Address that we want to check.
-  optional PostalAddress destination_address = 2;
-}
-
-message CheckDestinationResponse {
-  oneof response {
-    // Normalized or validated version of the address.
-    // Absent if there is an error.
-    PostalAddress validated_address = 1;
-
-    // Reason or description of any validation errors.
-    string error = 2;
-  }
-}
-
 service DynamexService {
   // Creates labels with tracking numbers.
   rpc CreateLabels(CreateLabelsRequest)
@@ -289,8 +270,5 @@ service DynamexService {
   // Get the tracking status of tracking numbers.
   rpc GetTrackingStatus(GetTrackingStatusRequest)
     returns (GetTrackingStatusResponse) {}
-
-  // Determines whether the place is a reachable destination.
-  rpc CheckDestination(CheckDestinationRequest)
-    returns (CheckDestinationResponse) {}
 }
+

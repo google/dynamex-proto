@@ -86,9 +86,12 @@ message DeliveryOptions {
 message CreateLabelRequest {
   // Describes one label being requested.
   message RequestedLabel {
-    // Reference numbers to associate with this shipment
-    // (these should be printed on the label)
-    repeated string reference_number = 5;
+    // Primary number associated with the parcel
+    optional string tracking_number = 1;
+  
+    // Additional reference numbers to associate with this shipment
+    // (these will be printed on the label)
+    repeated string reference_number = 2;
   }
 
   // Describes a shipment which may have multiple labels associated with it.
@@ -130,11 +133,8 @@ message CreateLabelsResponse {
     // Tracking number that can be used in tracking requests.
     optional string tracking_number = 1;
 
-    // TODO(ashmore): Find out what information Dynamex needs on the label.
-    // sorting code? what else?
-
-    // Reference numbers from the request.
-    repeated string reference_number = 3;
+    // Dynamex specific sorting code
+    optional string sorting_code = 2;
   }
 
   message ShipmentData {
@@ -166,7 +166,7 @@ message CreateLabelsResponse {
   }
 }
 
-message CancelLabelsRequest {
+message CancelPickupsRequest {
   // Account for authenticating the request.
   optional AccountDetails account_details = 1;
 
@@ -174,9 +174,9 @@ message CancelLabelsRequest {
   repeated string tracking_number = 2;
 }
 
-message CancelLabelsResponse {
+message CancelPickupsResponse {
 
-  message CanceledLabel {
+  message CanceledPickup {
     // Tracking number corresponding to the label being canceled.
     optional string tracking_number = 1;
 
@@ -185,77 +185,17 @@ message CancelLabelsResponse {
     optional string error = 2;
   }
 
-  message CanceledLabels {
-    repeated CanceledLabel label = 1;
+  message CanceledPickups {
+    repeated CanceledPickup pickup = 1;
   }
 
   oneof response {
-    // Labels that have been canceled.
-    CanceledLabels canceled_labels = 1;
+    // Pickups that have been canceled.
+    CanceledPickups canceled_pickups = 1;
 
     // Should be present if there is an error with the request.
     string error = 2;
   }
-}
-
-message GetTrackingStatusRequest {
-  // Account for authenticating the request.
-  optional AccountDetails account_details = 1;
-
-  // Tracking numbers of the parcels to track.
-  repeated string tracking_number = 2;
-}
-
-message GetTrackingStatusResponse {
-  message TrackingEvent {
-    enum Type {
-      // Present for forward compatibility. Unrecognized enums will default to
-      // this value.
-      UNKNOWN = 0;
-
-      // Informational event that does not necessarily affect delivery status.
-      INFO = 1;
-
-      // Parcel is en route to the recipient.
-      OUT_FOR_DELIVERY = 2;
-
-      // Parcel has been successfully delivered.
-      DELIVERED = 3;
-
-      // A delivery attempt was made but could not be completed.
-      // Example: a signature was required and the recipient was not home.
-      DELIVERY_FAILED = 4;
-
-      // Something has happened which requires input from the shipper.
-      NEEDS_ATTENTION = 5;
-
-      // The parcel can not be delivered.
-      // Example: The parcel is irreperably damaged and unsendable.
-      GAVE_UP = 6;
-    }
-
-    // Type of the event.
-    optional Type type = 1;
-
-    // Time of the event in epoch millis.
-    optional int64 timestamp_millis = 2;
-
-    // Extra information associated with the event.
-    optional string notes = 3;
-  }
-
-  message TrackedParcel {
-    // Tracking number of the parcel.
-    optional string tracking_number = 1;
-
-    // Events associated with the parcel.
-    repeated TrackingEvent tracking_events = 2;
-  }
-
-  // Events for each of the tracking numbers requested. If a tracking number
-  // was requested that does not exist, it should not be included in the
-  // response.
-  repeated TrackedParcel tracked_parcels = 1;
 }
 
 service DynamexService {
@@ -263,12 +203,8 @@ service DynamexService {
   rpc CreateLabels(CreateLabelsRequest)
     returns (CreateLabelsResponse) {}
 
-  // Cancels labels that are not expected to be shipped.
-  rpc CancelLabels(CancelLabelsRequest)
-    returns (CancelLabelsResponse) {}
-
-  // Get the tracking status of tracking numbers.
-  rpc GetTrackingStatus(GetTrackingStatusRequest)
-    returns (GetTrackingStatusResponse) {}
+  // Cancels pickup requests
+  rpc CancelPickups(CancelPickupsRequest)
+    returns (CancelPickupsResponse) {}
 }
 

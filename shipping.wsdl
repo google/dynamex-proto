@@ -1,129 +1,113 @@
-<?xml version="1.0" encoding="UTF-8"?><!--
-Copyright 2016 Google Inc. All Rights Reserved.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.-->
+<?xml version="1.0" encoding="UTF-8"?><!-- Copyright 2016 Google Inc. All Rights 
+  Reserved. Licensed under the Apache License, Version 2.0 (the "License"); you may 
+  not use this file except in compliance with the License. You may obtain a copy of 
+  the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable 
+  law or agreed to in writing, software distributed under the License is distributed 
+  on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express 
+  or implied. See the License for the specific language governing permissions and limitations 
+  under the License. -->
 <wsdl:definitions targetNamespace="http://github.com/google/dynamex-proto"
                   xmlns:ns="http://github.com/google/dynamex-proto"
-                  xmlns:ns1="http://org.apache.axis2/xsd"
-                  xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl"
                   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
                   xmlns:http="http://schemas.xmlsoap.org/wsdl/http/"
                   xmlns:xs="http://www.w3.org/2001/XMLSchema"
                   xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
-                  xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/"
-                  xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/">
-  <wsdl:documentation>PackageTracking10</wsdl:documentation>
+                  xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/">
   <wsdl:types>
     <xs:schema targetNamespace="http://github.com/google/dynamex-proto"
                attributeFormDefault="qualified"
                elementFormDefault="qualified">
+      <xs:complexType name="Parcel">
+        <xs:sequence>
+          <xs:element name="barcode" type="xs:string" minOccurs="0" maxOccurs="1"/>
+          <xs:element name="weight" type="xs:double" minOccurs="0" maxOccurs="1"/>
+          <xs:element name="weight_unit" type="xs:string" minOccurs="0" maxOccurs="1"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="Goods">
+        <xs:sequence>
+          <xs:element name="parcel" type="ns:Parcel" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+      </xs:complexType>
       <xs:complexType name="PostalAddress">
         <xs:sequence>
-          <xs:element name="recipientName" type="xs:string" minOccurs="0" maxOccurs="1"/>
-          <xs:element name="phoneNumber" type="xs:string" minOccurs="0" maxOccurs="1"/>
-          <xs:element name="addressLine" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
-          <xs:element name="localityName" type="xs:string" minOccurs="0" maxOccurs="1"/>
-          <xs:element name="administrativeAreaName" type="xs:string" minOccurs="0" maxOccurs="1"/>
-          <xs:element name="postalCodeNumber" type="xs:string" minOccurs="0" maxOccurs="1"/>
-          <xs:element name="countryNameCode" type="xs:string" minOccurs="0" maxOccurs="1"/>
+          <xs:element name="name" type="xs:string" minOccurs="0" maxOccurs="1"/>
+          <xs:element name="street" type="xs:string" minOccurs="0" maxOccurs="3"/>
+          <xs:element name="city" type="xs:string" minOccurs="0" maxOccurs="1"/>
+          <xs:element name="state" type="xs:string" minOccurs="0" maxOccurs="1"/>
+          <xs:element name="zip" type="xs:string" minOccurs="0" maxOccurs="1"/>
+          <xs:element name="country" type="xs:string" minOccurs="0" maxOccurs="1"/>
+          <xs:element name="phone_number" type="xs:string" minOccurs="0" maxOccurs="1"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:simpleType name="StopType">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="PICKUP"/>
+          <xs:enumeration value="DELIVERY"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType name="SignatureRequirement">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="SIGNATURE_REQUIRED"/>
+          <xs:enumeration value="NO_SIGNATURE_REQUIRED"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType name="ServiceLevel">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="SAME_DAY"/>
+          <xs:enumeration value="GROUND"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:complexType name="Stop">
+        <xs:sequence>
+          <xs:element name="type" type="ns:StopType" minOccurs="0" maxOccurs="1"/>
+          <xs:element name="date" type="xs:string" minOccurs="0" maxOccurs="1"/>
+          <xs:element name="service_level" type="ns:ServiceLevel" minOccurs="0" maxOccurs="1"/>
+          <xs:element name="consignee" type="ns:PostalAddress" minOccurs="0" maxOccurs="1"/>
+          <xs:element name="shipper" type="ns:PostalAddress" minOccurs="0" maxOccurs="1"/>
+          <xs:element name="signature_requirement" type="ns:SignatureRequirement" minOccurs="0" maxOccurs="1"/>
+          <xs:element name="reference" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="goods" type="ns:Goods" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
       </xs:complexType>
       <xs:complexType name="AccountDetails">
         <xs:sequence>
-          <xs:element name="accountNumber" type="xs:string" minOccurs="0" maxOccurs="1"/>
           <xs:element name="username" type="xs:string" minOccurs="0" maxOccurs="1"/>
           <xs:element name="password" type="xs:string" minOccurs="0" maxOccurs="1"/>
+          <xs:element name="account_number" type="xs:string" minOccurs="0" maxOccurs="1"/>
         </xs:sequence>
       </xs:complexType>
-      <xs:complexType name="DeliveryWindow">
-        <xs:sequence>
-          <xs:element name="windowStartMillis" type="xs:long" minOccurs="0" maxOccurs="1"/>
-          <xs:element name="windowEndMillis" type="xs:long" minOccurs="0" maxOccurs="1"/>
-        </xs:sequence>
-      </xs:complexType>
-      <xs:simpleType name="DeliveryFailureBehavior">
-        <xs:restriction base="xs:string">
-          <xs:enumeration value="REDELIVER_NEXT_DAY_3_TIMES"/>
-          <xs:enumeration value="DISCARD"/>
-        </xs:restriction>
-      </xs:simpleType>
-      <xs:complexType name="DeliveryOptions">
-        <xs:sequence>
-          <xs:element name="signatureRequired" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
-          <xs:element name="containsAlcohol" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
-          <xs:element name="containsPerishables" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
-          <xs:element name="deliveryFailureBehavior" type="ns:DeliveryFailureBehavior" minOccurs="0" maxOccurs="1"/>
-        </xs:sequence>
-      </xs:complexType>
-      <xs:complexType name="RequestedLabel">
-        <xs:sequence>
-          <xs:element name="trackingNumber" type="xs:string" minOccurs="0" maxOccurs="1"/>
-          <xs:element name="referenceNumber" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
-        </xs:sequence>
-      </xs:complexType>
-      <xs:complexType name="Shipment">
-        <xs:sequence>
-          <xs:element name="requestedLabel" type="ns:RequestedLabel" minOccurs="0" maxOccurs="unbounded"/>
-          <xs:element name="returnAddress" type="ns:PostalAddress" minOccurs="0" maxOccurs="1"/>
-          <xs:element name="pickupAddress" type="ns:PostalAddress" minOccurs="0" maxOccurs="1"/>
-          <xs:element name="recipientAddress" type="ns:PostalAddress" minOccurs="0" maxOccurs="1"/>
-          <xs:element name="deliveryInstructions" type="xs:string" minOccurs="0" maxOccurs="1"/>
-          <xs:element name="deliveryWindow" type="ns:DeliveryWindow" minOccurs="0" maxOccurs="1"/>
-          <xs:element name="deliveryOptions" type="ns:DeliveryOptions" minOccurs="0" maxOccurs="1"/>
-        </xs:sequence>
-      </xs:complexType>
-      <xs:complexType name="ShipRequest">
-        <xs:sequence>
-          <xs:element name="accountDetails" type="ns:AccountDetails" minOccurs="0" maxOccurs="1"/>
-          <xs:element name="shipment" type="ns:Shipment" minOccurs="0" maxOccurs="unbounded"/>
-        </xs:sequence>
-      </xs:complexType>
-      <xs:complexType name="LabelData">
-        <xs:sequence>
-          <xs:element name="trackingNumber" type="xs:string" minOccurs="0" maxOccurs="1"/>
-          <xs:element name="sortingCode" type="xs:string" minOccurs="0" maxOccurs="1"/>
-        </xs:sequence>
-      </xs:complexType>
-      <xs:complexType name="ShipmentResponse">
-        <xs:choice>
-          <xs:element name="labelData" type="ns:LabelData" minOccurs="0" maxOccurs="unbounded"/>
-          <xs:element name="error" type="xs:string" minOccurs="0" maxOccurs="1"/>
-        </xs:choice>
-      </xs:complexType>
-      <xs:complexType name="CreateLabelsResponse">
-        <xs:choice>
-          <xs:element name="shipment" type="ns:ShipmentResponse" minOccurs="0" maxOccurs="unbounded"/>
-          <xs:element name="error" type="xs:string" minOccurs="0" maxOccurs="1"/>
-        </xs:choice>
-      </xs:complexType>
+      <xs:element name="CreateShipmentRequest">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="auth" type="ns:AccountDetails" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="stop" type="ns:Stop" minOccurs="0" maxOccurs="unbounded"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="CreateShipmentResponse">
+        <xs:complexType>
+          <xs:element name="message" type="xs:string" minOccurs="0" maxOccurs="1"/>
+        </xs:complexType>
+      </xs:element>
     </xs:schema>
   </wsdl:types>
-  <wsdl:message name="CreateLabelsRequest">
-    <wsdl:part name="parameters" element="ns:CreateLabelsRequest"/>
+  <wsdl:message name="CreateShipmentRequest">
+    <wsdl:part name="parameters" element="ns:CreateShipmentRequest"/>
   </wsdl:message>
-  <wsdl:message name="CreateLabelsResponse">
-    <wsdl:part name="parameters" element="ns:CreateLabelsResponse"/>
+  <wsdl:message name="CreateShipmentResponse">
+    <wsdl:part name="parameters" element="ns:CreateShipmentResponse"/>
   </wsdl:message>
-  <wsdl:portType name="ShipPortType">
-    <wsdl:operation name="getPackageTracking">
-      <wsdl:input message="ns:getPackageTracking"/>
-      <wsdl:output message="ns:getPackageTrackingResponse"/>
+  <wsdl:portType name="PortType">
+    <wsdl:operation name="createShipment">
+      <wsdl:input message="ns:CreateShipmentRequest"/>
+      <wsdl:output message="ns:CreateShipmentResponse"/>
     </wsdl:operation>
   </wsdl:portType>
-  <wsdl:binding name="CreateLabelsHttpBinding" type="ns:ShipPortType">
+  <wsdl:binding name="HttpBinding" type="ns:PortType">
     <http:binding verb="POST"/>
-    <wsdl:operation name="CreateLabels">
-      <http:operation location="CreateLabels"/>
+    <wsdl:operation name="CreateShipment">
+      <http:operation location="CreateShipment"/>
       <wsdl:input>
         <mime:content part="parameters" type="application/xml"/>
       </wsdl:input>
@@ -132,10 +116,9 @@ limitations under the License.-->
       </wsdl:output>
     </wsdl:operation>
   </wsdl:binding>
-  <wsdl:service name="Ship1">
-    <wsdl:port name="CreateLabelsEndpoint" binding="ns:CreateLabels">
+  <wsdl:service name="Dynamex">
+    <wsdl:port name="DynamexEndpoint" binding="ns:HttpBinding">
       <soap:address location="https://webservice.dynamex.com/services/Ship1.CreateLabels/"/>
     </wsdl:port>
   </wsdl:service>
 </wsdl:definitions>
-

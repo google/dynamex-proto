@@ -22,6 +22,8 @@
           <xs:element name="barcode" type="xs:string" minOccurs="0" maxOccurs="1"/>
           <xs:element name="weight" type="xs:double" minOccurs="0" maxOccurs="1"/>
           <xs:element name="weight_unit" type="xs:string" minOccurs="0" maxOccurs="1"/>
+          <xs:element name="goods_ref1" type="xs:string" minOccurs="0" maxOccurs="1"/>
+          <xs:element name="goods_ref2" type="xs:string" minOccurs="0" maxOccurs="1"/>
         </xs:sequence>
       </xs:complexType>
       <xs:complexType name="Goods">
@@ -66,8 +68,12 @@
           <xs:element name="consignee" type="ns:PostalAddress" minOccurs="0" maxOccurs="1"/>
           <xs:element name="shipper" type="ns:PostalAddress" minOccurs="0" maxOccurs="1"/>
           <xs:element name="signature_requirement" type="ns:SignatureRequirement" minOccurs="0" maxOccurs="1"/>
+          <xs:element name="special_instructions" type="xs:string" minOccurs="0" maxOccurs="1"/>
           <xs:element name="reference" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
           <xs:element name="goods" type="ns:Goods" minOccurs="0" maxOccurs="unbounded"/>
+          <!-- Times here in YYYYMMDDHHMMSS or HHMMSS in local time -->
+          <xs:element name="req_arr_time" type="xs:string" minOccurs="0" maxOccurs="1"/>
+          <xs:element name="req_dep_time" type="xs:string" minOccurs="0" maxOccurs="1"/>
         </xs:sequence>
       </xs:complexType>
       <xs:complexType name="AccountDetails">
@@ -122,3 +128,4 @@
     </wsdl:port>
   </wsdl:service>
 </wsdl:definitions>
+

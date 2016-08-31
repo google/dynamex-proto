@@ -22,14 +22,14 @@
           <xs:element name="barcode" type="xs:string" minOccurs="0" maxOccurs="1"/>
           <xs:element name="weight" type="xs:double" minOccurs="0" maxOccurs="1"/>
           <xs:element name="weight_unit" type="xs:string" minOccurs="0" maxOccurs="1"/>
-          <xs:element name="goods_ref1" type="xs:string" minOccurs="0" maxOccurs="1"/>
-          <xs:element name="goods_ref2" type="xs:string" minOccurs="0" maxOccurs="1"/>
         </xs:sequence>
       </xs:complexType>
       <xs:complexType name="Goods">
         <xs:sequence>
           <xs:element name="parcel" type="ns:Parcel" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
+        <xs:element name="goods_ref1" type="xs:string" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="goods_ref2" type="xs:string" minOccurs="0" maxOccurs="1"/>
       </xs:complexType>
       <xs:complexType name="PostalAddress">
         <xs:sequence>
@@ -71,7 +71,9 @@
           <xs:element name="special_instructions" type="xs:string" minOccurs="0" maxOccurs="1"/>
           <xs:element name="reference" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
           <xs:element name="goods" type="ns:Goods" minOccurs="0" maxOccurs="unbounded"/>
-          <!-- Times here in YYYYMMDDHHMMSS or HHMMSS in local time -->
+          <!-- Times here in YYYYMMDDHHMMSS or HHMMSS in local time.
+            -- Represents the requested arrival and departure times,
+            -- intended as windows for scheduling pickups. -->
           <xs:element name="req_arr_time" type="xs:string" minOccurs="0" maxOccurs="1"/>
           <xs:element name="req_dep_time" type="xs:string" minOccurs="0" maxOccurs="1"/>
         </xs:sequence>
@@ -128,4 +130,3 @@
     </wsdl:port>
   </wsdl:service>
 </wsdl:definitions>
-
